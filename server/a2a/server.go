@@ -31,8 +31,11 @@ type AgentOptionFn func(*agentOption)
 
 // runOption holds configuration options for running the server
 type runOption struct {
-	Host string // Server host address (e.g., "0.0.0.0", "localhost")
-	Port int    // Server port number (e.g., 8080)
+	Host          string // Server host address (e.g., "0.0.0.0", "localhost")
+	Port          int    // Server port number (e.g., 8080)
+	BasePath      string
+	AgentCardPath *string
+	HandlerPath   string
 
 	Middlewares []app.HandlerFunc
 }
@@ -51,6 +54,40 @@ func WithHost(host string) RunOptionFn {
 func WithPort(port int) RunOptionFn {
 	return func(o *runOption) {
 		o.Port = port
+	}
+}
+
+// WithBasePath sets the server base path
+// All registered routes, including agent card and handler paths, are served under this base path.
+// For example, if BasePath is "/hello", then:
+// - the default AgentCardPath (".well-known/agent-card.json") is served at "/hello/.well-known/agent-card.json"
+// - the default HandlerPath (empty string) is served at "/hello/"
+// Default is "/" meaning no prefix.
+func WithBasePath(basePath string) RunOptionFn {
+	return func(o *runOption) {
+		o.BasePath = basePath
+	}
+}
+
+// WithAgentCardPath sets the JSON-RPC server agent card path
+// If not configured (nil), the full path after server start is:
+// path.Join(runOpts.BasePath, ".well-known/agent-card.json")
+// If configured, the full path is:
+// path.Join(runOpts.BasePath, *AgentCardPath)
+func WithAgentCardPath(path string) RunOptionFn {
+	return func(o *runOption) {
+		o.AgentCardPath = &path
+	}
+}
+
+// WithHandlerPath sets the JSON-RPC server handler path
+// If not configured (empty string), the full path after server start is:
+// path.Join(runOpts.BasePath)
+// If configured, the full path is:
+// path.Join(runOpts.BasePath, HandlerPath)
+func WithHandlerPath(handlerPath string) RunOptionFn {
+	return func(o *runOption) {
+		o.HandlerPath = handlerPath
 	}
 }
 
@@ -107,8 +144,11 @@ func (s *Server) Run(ctx context.Context, opts ...RunOptionFn) error {
 
 	// Build run options with defaults
 	runOpts := &runOption{
-		Host: "0.0.0.0", // Default to all interfaces
-		Port: 8000,      // Default HTTP port
+		Host:          "0.0.0.0", // Default to all interfaces
+		Port:          8000,      // Default HTTP port
+		BasePath:      "/",       // Default base path
+		AgentCardPath: nil,       // Default agent card path ".well-known/agent-card.json"
+		HandlerPath:   "",        // Default handler path
 	}
 	for _, opt := range opts {
 		opt(runOpts)
@@ -117,6 +157,7 @@ func (s *Server) Run(ctx context.Context, opts ...RunOptionFn) error {
 	// Create Hertz HTTP server instance
 	h := hertzServer.Default(
 		hertzServer.WithHostPorts(net.JoinHostPort(runOpts.Host, strconv.Itoa(runOpts.Port))),
+		hertzServer.WithBasePath(runOpts.BasePath),
 	)
 	s.server = h
 
@@ -126,8 +167,9 @@ func (s *Server) Run(ctx context.Context, opts ...RunOptionFn) error {
 
 	// Create JSON-RPC registrar for handling agent communication
 	r, err := jsonrpc.NewRegistrar(ctx, &jsonrpc.ServerConfig{
-		Router:      h,
-		HandlerPath: "/", // Handle requests at root path
+		Router:        h,
+		AgentCardPath: runOpts.AgentCardPath,
+		HandlerPath:   runOpts.HandlerPath,
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create registrar: %w", err)
