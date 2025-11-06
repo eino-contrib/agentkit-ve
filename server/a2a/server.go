@@ -24,18 +24,19 @@ type Server struct {
 }
 
 // agentOption holds configuration options for the registered agent
-type agentOption struct{}
+type agentOption struct {
+	AgentCardPath *string // Agent card path
+	HandlerPath   string  // Agent handler path
+}
 
 // AgentOptionFn is a function type for configuring agent options using the functional options pattern
 type AgentOptionFn func(*agentOption)
 
 // runOption holds configuration options for running the server
 type runOption struct {
-	Host          string // Server host address (e.g., "0.0.0.0", "localhost")
-	Port          int    // Server port number (e.g., 8080)
-	BasePath      string
-	AgentCardPath *string
-	HandlerPath   string
+	Host     string // Server host address (e.g., "0.0.0.0", "localhost")
+	Port     int    // Server port number (e.g., 8080)
+	BasePath string // Server base path
 
 	Middlewares []app.HandlerFunc
 }
@@ -74,8 +75,8 @@ func WithBasePath(basePath string) RunOptionFn {
 // path.Join(runOpts.BasePath, ".well-known/agent-card.json")
 // If configured, the full path is:
 // path.Join(runOpts.BasePath, *AgentCardPath)
-func WithAgentCardPath(path string) RunOptionFn {
-	return func(o *runOption) {
+func WithAgentCardPath(path string) AgentOptionFn {
+	return func(o *agentOption) {
 		o.AgentCardPath = &path
 	}
 }
@@ -85,8 +86,8 @@ func WithAgentCardPath(path string) RunOptionFn {
 // path.Join(runOpts.BasePath)
 // If configured, the full path is:
 // path.Join(runOpts.BasePath, HandlerPath)
-func WithHandlerPath(handlerPath string) RunOptionFn {
-	return func(o *runOption) {
+func WithHandlerPath(handlerPath string) AgentOptionFn {
+	return func(o *agentOption) {
 		o.HandlerPath = handlerPath
 	}
 }
@@ -144,11 +145,9 @@ func (s *Server) Run(ctx context.Context, opts ...RunOptionFn) error {
 
 	// Build run options with defaults
 	runOpts := &runOption{
-		Host:          "0.0.0.0", // Default to all interfaces
-		Port:          8000,      // Default HTTP port
-		BasePath:      "/",       // Default base path
-		AgentCardPath: nil,       // Default agent card path ".well-known/agent-card.json"
-		HandlerPath:   "",        // Default handler path
+		Host:     "0.0.0.0", // Default to all interfaces
+		Port:     8000,      // Default HTTP port
+		BasePath: "/",       // Default base path
 	}
 	for _, opt := range opts {
 		opt(runOpts)
@@ -168,8 +167,8 @@ func (s *Server) Run(ctx context.Context, opts ...RunOptionFn) error {
 	// Create JSON-RPC registrar for handling agent communication
 	r, err := jsonrpc.NewRegistrar(ctx, &jsonrpc.ServerConfig{
 		Router:        h,
-		AgentCardPath: runOpts.AgentCardPath,
-		HandlerPath:   runOpts.HandlerPath,
+		AgentCardPath: s.opts.AgentCardPath, // Default agent card path ".well-known/agent-card.json"
+		HandlerPath:   s.opts.HandlerPath,   // Default handler path
 	})
 	if err != nil {
 		return fmt.Errorf("failed to create registrar: %w", err)
