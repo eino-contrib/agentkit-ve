@@ -18,6 +18,8 @@ import (
 )
 
 type Config struct {
+	Provider string
+
 	APIKey string
 
 	BaseURL string
@@ -70,13 +72,14 @@ type ChatModel struct {
 	model.ToolCallingChatModel
 }
 
-func NewChatModel(ctx context.Context, provider string, cfg *Config) (*ChatModel, error) {
+func NewChatModel(ctx context.Context, cfg *Config) (*ChatModel, error) {
 
 	var (
 		err    error
 		cModel model.ToolCallingChatModel
 	)
 
+	provider := cfg.Provider
 	mType, ok := providerPrefixToModelType[provider]
 	if !ok {
 		return nil, fmt.Errorf("not support provider %s", provider)
