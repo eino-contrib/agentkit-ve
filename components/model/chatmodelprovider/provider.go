@@ -2,7 +2,9 @@ package chatmodelprovider
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/arkbot"
@@ -15,6 +17,8 @@ import (
 	"github.com/cloudwego/eino/components"
 	"github.com/cloudwego/eino/components/model"
 	"google.golang.org/genai"
+
+	"github.com/eino-contrib/agentkit-ve/libs/veauth"
 )
 
 type Config struct {
@@ -36,6 +40,11 @@ type Config struct {
 	// Stop is the stop words, which controls the stopping condition of the model.
 	Stop []string
 }
+
+const (
+	defaultProvider = "volcengine"
+	defaultModel    = "Doubao 1.5"
+)
 
 type modelType string
 
@@ -78,6 +87,28 @@ func NewChatModel(ctx context.Context, cfg *Config) (*ChatModel, error) {
 		err    error
 		cModel model.ToolCallingChatModel
 	)
+
+	if cfg == nil {
+		cfg = &Config{
+			Provider: defaultProvider,
+			Model:    defaultModel,
+		}
+	}
+
+	if cfg.Provider == "" {
+		cfg.Provider = defaultProvider
+	}
+
+	if cfg.Provider == defaultProvider && cfg.Model == "" {
+		cfg.Model = defaultModel
+	}
+
+	if cfg.Provider == defaultProvider && cfg.APIKey == "" {
+		cfg.APIKey, err = getDefaultArkAPIKey()
+		if err != nil {
+			return nil, fmt.Errorf("provider is volcengine, apikey is empty, then get default ark api key fail, err=%v", err)
+		}
+	}
 
 	provider := cfg.Provider
 	mType, ok := providerPrefixToModelType[provider]
@@ -353,4 +384,51 @@ func (c *Config) toQwenConfig() *qwen.ChatModelConfig {
 		cfg.Stop = c.Stop
 	}
 	return cfg
+}
+
+func getDefaultArkAPIKey() (string, error) {
+	ak := os.Getenv("VOLCENGINE_ACCESS_KEY")
+	sk := os.Getenv("VOLCENGINE_SECRET_KEY")
+	token := ""
+	if ak == "" || sk == "" {
+		credential, err := getCredentialFromVefaasIam()
+		if err != nil {
+			return "", err
+		}
+		ak = credential.AccessKeyId
+		sk = credential.SecretAccessKey
+		token = credential.SessionToken
+	}
+	apiKey, err := veauth.GetArkAPIKey(ak, sk, token)
+	if err != nil {
+		return "", err
+	}
+	return apiKey, err
+
+}
+
+const VefaasIamCridentialPath = "/var/run/secrets/iam/credential"
+
+type veIAMCredential struct {
+	AccessKeyId     string `json:"access_key_id"`
+	SecretAccessKey string `json:"secret_access_key"`
+	SessionToken    string `json:"session_token"`
+}
+
+func getCredentialFromVefaasIam() (*veIAMCredential, error) {
+	if _, err := os.Stat(VefaasIamCridentialPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("get Volcengine access key or secret key from environment variables failed, and VeFaaS IAM file (path=%s) does not exist. Please check your configuration", VefaasIamCridentialPath)
+	}
+	file, err := os.Open(VefaasIamCridentialPath)
+	if err != nil {
+		return nil, fmt.Errorf("failed to open VeFaaS IAM credential file: %v", err)
+	}
+	defer file.Close()
+
+	var credDict veIAMCredential
+	if err := json.NewDecoder(file).Decode(&credDict); err != nil {
+		return nil, fmt.Errorf("failed to decode JSON from VeFaaS IAM credential file: %v", err)
+	}
+	return &credDict, nil
+
 }

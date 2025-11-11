@@ -1,8 +1,6 @@
 module github.com/eino-contrib/agentkit-ve/components/model/chatmodelprovider
 
-go 1.24.0
-
-toolchain go1.24.10
+go 1.24.10
 
 require (
 	github.com/cloudwego/eino v0.5.11
@@ -40,13 +38,15 @@ require (
 	github.com/bahlo/generic-list-go v0.2.0 // indirect
 	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/bytedance/gopkg v0.1.3 // indirect
-	github.com/bytedance/sonic v1.14.1 // indirect
-	github.com/bytedance/sonic/loader v0.3.0 // indirect
+	github.com/bytedance/sonic v1.14.2 // indirect
+	github.com/bytedance/sonic/loader v0.4.0 // indirect
+	github.com/cenkalti/backoff/v4 v4.1.2 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.1.1 // indirect
 	github.com/cohesion-org/deepseek-go v1.3.2 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/eino-contrib/agentkit-ve/libs/veauth v0.0.0-20251111090432-f05b7de11886 // indirect
 	github.com/eino-contrib/jsonschema v1.0.2 // indirect
 	github.com/eino-contrib/ollama v0.1.0 // indirect
 	github.com/evanphx/json-patch v0.5.2 // indirect
@@ -86,8 +86,8 @@ require (
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
-	github.com/volcengine/volc-sdk-golang v1.0.23 // indirect
-	github.com/volcengine/volcengine-go-sdk v1.1.44 // indirect
+	github.com/volcengine/volc-sdk-golang v1.0.226 // indirect
+	github.com/volcengine/volcengine-go-sdk v1.1.47 // indirect
 	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
