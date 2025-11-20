@@ -43,7 +43,7 @@ type Config struct {
 
 const (
 	defaultProvider = "volcengine"
-	defaultModel    = "Doubao 1.5"
+	defaultModel    = "doubao-1-5-thinking-pro-250415"
 )
 
 type modelType string
@@ -106,7 +106,7 @@ func NewChatModel(ctx context.Context, cfg *Config) (*ChatModel, error) {
 	if cfg.Provider == defaultProvider && cfg.APIKey == "" {
 		cfg.APIKey, err = getDefaultArkAPIKey()
 		if err != nil {
-			return nil, fmt.Errorf("provider is volcengine, apikey is empty, then get default ark api key fail, err=%v", err)
+			return nil, fmt.Errorf("volcengine provider: failed to get default Ark API key: %w", err)
 		}
 	}
 
@@ -389,7 +389,6 @@ func (c *Config) toQwenConfig() *qwen.ChatModelConfig {
 func getDefaultArkAPIKey() (string, error) {
 	ak := os.Getenv("VOLCENGINE_ACCESS_KEY")
 	sk := os.Getenv("VOLCENGINE_SECRET_KEY")
-	token := ""
 	if ak == "" || sk == "" {
 		credential, err := getCredentialFromVefaasIam()
 		if err != nil {
@@ -397,9 +396,8 @@ func getDefaultArkAPIKey() (string, error) {
 		}
 		ak = credential.AccessKeyId
 		sk = credential.SecretAccessKey
-		token = credential.SessionToken
 	}
-	apiKey, err := veauth.GetArkAPIKey(ak, sk, token)
+	apiKey, err := veauth.GetArkAPIKey(ak, sk)
 	if err != nil {
 		return "", err
 	}
