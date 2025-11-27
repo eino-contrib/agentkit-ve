@@ -4,20 +4,28 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/eino-contrib/agentkit-ve/libs/veauth/internal"
 	"github.com/volcengine/volcengine-go-sdk/volcengine"
 	"github.com/volcengine/volcengine-go-sdk/volcengine/credentials"
 	"github.com/volcengine/volcengine-go-sdk/volcengine/session"
+
+	"github.com/eino-contrib/agentkit-ve/libs/veauth/internal"
 )
 
 type option struct {
-	region string
+	region       string
+	sessionToken string
 }
 type OptionFn func(*option)
 
 func WithRegion(region string) OptionFn {
 	return func(o *option) {
 		o.region = region
+	}
+}
+
+func WithSessionToken(sessionToken string) OptionFn {
+	return func(o *option) {
+		o.sessionToken = sessionToken
 	}
 }
 
@@ -32,7 +40,7 @@ func GetArkAPIKey(ak, sk string, opts ...OptionFn) (string, error) {
 
 	config := volcengine.NewConfig().
 		WithRegion(opt.region).
-		WithCredentials(credentials.NewStaticCredentials(ak, sk, ""))
+		WithCredentials(credentials.NewStaticCredentials(ak, sk, opt.sessionToken))
 	sess, err := session.NewSession(config)
 	if err != nil {
 		return "", err
