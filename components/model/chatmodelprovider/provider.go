@@ -389,6 +389,7 @@ func (c *Config) toQwenConfig() *qwen.ChatModelConfig {
 func getDefaultArkAPIKey() (string, error) {
 	ak := os.Getenv("VOLCENGINE_ACCESS_KEY")
 	sk := os.Getenv("VOLCENGINE_SECRET_KEY")
+	sessionToken := ""
 	if ak == "" || sk == "" {
 		credential, err := getCredentialFromVefaasIam()
 		if err != nil {
@@ -396,8 +397,9 @@ func getDefaultArkAPIKey() (string, error) {
 		}
 		ak = credential.AccessKeyId
 		sk = credential.SecretAccessKey
+		sessionToken = credential.SessionToken
 	}
-	apiKey, err := veauth.GetArkAPIKey(ak, sk)
+	apiKey, err := veauth.GetArkAPIKey(ak, sk, veauth.WithSessionToken(sessionToken))
 	if err != nil {
 		return "", err
 	}
