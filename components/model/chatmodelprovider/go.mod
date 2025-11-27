@@ -12,7 +12,7 @@ require (
 	github.com/cloudwego/eino-ext/components/model/ollama v0.1.5
 	github.com/cloudwego/eino-ext/components/model/openai v0.1.3
 	github.com/cloudwego/eino-ext/components/model/qwen v0.1.1
-	github.com/eino-contrib/agentkit-ve/libs/veauth v0.1.0
+	github.com/eino-contrib/agentkit-ve/libs/veauth v0.1.1
 	github.com/stretchr/testify v1.11.1
 	google.golang.org/genai v1.13.0
 )

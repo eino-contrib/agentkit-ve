@@ -180,6 +180,8 @@ github.com/eapache/queue v1.1.0/go.mod h1:6eCeP0CKFpHLu8blIFXhExK/dRa7WDZfr6jVFP
 github.com/edsrzf/mmap-go v1.0.0/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
 github.com/eino-contrib/agentkit-ve/libs/veauth v0.1.0 h1:hJpEbAnx/G41qOLZhsbYZZjpiPzKOJUDijTCBnyT29I=
 github.com/eino-contrib/agentkit-ve/libs/veauth v0.1.0/go.mod h1:exO7r1bWQ/auV0v2x2CByhuaqa9a8qZxM8/nN+NjBKM=
+github.com/eino-contrib/agentkit-ve/libs/veauth v0.1.1 h1:STORLFHNUCUd4CyWrNhTpELRhOmBh9W1ZAefl6opPaw=
+github.com/eino-contrib/agentkit-ve/libs/veauth v0.1.1/go.mod h1:exO7r1bWQ/auV0v2x2CByhuaqa9a8qZxM8/nN+NjBKM=
 github.com/eino-contrib/jsonschema v1.0.2 h1:HaxruBMUdnXa7Lg/lX8g0Hk71ZIfdTZXmBQz0e3esr8=
 github.com/eino-contrib/jsonschema v1.0.2/go.mod h1:cpnX4SyKjWjGC7iN2EbhxaTdLqGjCi0e9DxpLYxddD4=
 github.com/eino-contrib/ollama v0.1.0 h1:z1NaMdKW6X1ftP8g5xGGR5zDRPUtuTKFq35vBQgxsN4=
